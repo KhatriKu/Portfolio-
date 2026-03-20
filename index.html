@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kushal Khatri — Developer & Entrepreneur</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #060810;
+      color: #e0e0e0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    #canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      display: block;
+    }
+
+    /* ── Sections ── */
+    .section {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 60px 6vw;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.55s cubic-bezier(.4,0,.2,1),
+                  transform 0.55s cubic-bezier(.4,0,.2,1),
+                  background 0.55s ease;
+      background: transparent;
+    }
+    .section.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+      background: linear-gradient(
+        to right,
+        rgba(6,8,16,0.96) 0%,
+        rgba(6,8,16,0.88) 36%,
+        rgba(6,8,16,0.28) 58%,
+        transparent 74%
+      );
+    }
+
+    .content { max-width: 500px; width: 100%; }
+
+    /* ── Typography ── */
+    .section-title {
+      font-size: clamp(1.9rem, 4.5vw, 3.1rem);
+      font-weight: 700;
+      margin-bottom: 26px;
+      background: linear-gradient(135deg, #ff9844, #c0392b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.15;
+    }
+    .name { font-size: 1.75rem; color: #ff9844; margin-bottom: 14px; font-weight: 600; }
+    .body-text { color: #8888a0; line-height: 1.8; margin-bottom: 12px; font-size: 0.98rem; }
+
+    /* ── Tags ── */
+    .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 6px; }
+    .tag {
+      background: rgba(255,152,68,0.1);
+      border: 1px solid rgba(255,152,68,0.45);
+      color: #ff9844;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.81rem;
+    }
+
+    /* ── Project card ── */
+    .carousel { display: grid; grid-template-columns: 34px 1fr 34px; gap: 11px; align-items: center; }
+    .project-card {
+      background: rgba(10,12,22,0.84);
+      border: 1px solid rgba(255,152,68,0.22);
+      border-radius: 12px;
+      padding: 18px 16px;
+      backdrop-filter: blur(10px);
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .project-card h2 { color: #ff9844; font-size: 1.28rem; font-weight: 600; }
+    .project-desc { color: #888898; line-height: 1.65; font-size: 0.9rem; flex: 1; }
+    .tech-list { display: flex; flex-wrap: wrap; gap: 5px; }
+    .tech-badge {
+      background: rgba(255,152,68,0.07);
+      color: #ff9844;
+      padding: 2px 8px;
+      border-radius: 9px;
+      font-size: 0.77rem;
+      border: 1px solid rgba(255,152,68,0.2);
+    }
+    .project-link { color: #ff9844; font-weight: 600; text-decoration: none; font-size: 0.86rem; }
+
+    /* ── Carousel btn ── */
+    .cbtn {
+      background: rgba(255,152,68,0.14);
+      border: 1px solid rgba(255,152,68,0.45);
+      color: #ff9844;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+    .cbtn:hover { background: #ff9844; color: #fff; }
+
+    /* ── Dots ── */
+    .dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }
+    .dot {
+      height: 7px;
+      border-radius: 3.5px;
+      background: rgba(255,152,68,0.26);
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.3s ease;
+    }
+    .dot.active { background: #ff9844; width: 22px !important; }
+
+    /* ── Contact form ── */
+    .form-input {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(10,12,22,0.74);
+      border: 1px solid rgba(255,152,68,0.22);
+      border-radius: 7px;
+      color: #e0e0e0;
+      font-size: 0.93rem;
+      font-family: inherit;
+      margin-bottom: 10px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: rgba(255,152,68,0.6); }
+    .form-input::placeholder { color: #505060; }
+    textarea.form-input { resize: vertical; }
+    .submit-btn {
+      width: 100%;
+      padding: 11px;
+      background: linear-gradient(135deg, #ff9844, #c0392b);
+      border: none;
+      border-radius: 7px;
+      color: #fff;
+      font-size: 0.93rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .submit-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .success-msg {
+      display: none;
+      margin-top: 10px; padding: 10px;
+      border-radius: 7px; text-align: center;
+      color: #4ade80;
+      background: rgba(74,222,128,0.07);
+      border: 1px solid rgba(74,222,128,0.35);
+    }
+    .success-msg.show { display: block; }
+
+    /* ── Nav dots (right side) ── */
+    #nav-dots {
+      position: fixed; right: 22px; top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .nav-dot {
+      width: 7px;
+      border-radius: 3.5px;
+      background: rgba(255,152,68,0.28);
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.35s ease;
+    }
+    .nav-dot.active { background: #ff9844; height: 22px !important; }
+
+    /* ── Section label ── */
+    #section-label {
+      position: fixed; top: 22px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      color: rgba(255,152,68,0.6);
+      font-size: 0.7rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    /* ── Scroll hint ── */
+    #scroll-hint {
+      position: fixed; bottom: 26px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      transition: opacity 0.4s;
+    }
+    #scroll-hint span {
+      color: rgba(255,152,68,0.55);
+      font-size: 0.68rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      animation: sh 2s ease-in-out infinite;
+    }
+    #scroll-hint .line {
+      width: 1px; height: 28px;
+      background: linear-gradient(to bottom, rgba(255,152,68,0.6), transparent);
+    }
+    @keyframes sh {
+      0%,100% { opacity: .55; transform: translateY(0); }
+      50%      { opacity: .2;  transform: translateY(5px); }
+    }
+
+    @media (max-width: 600px) {
+      .section { padding: 40px 5vw; }
+      .section.active {
+        background: linear-gradient(
+          to right,
+          rgba(6,8,16,0.96) 0%,
+          rgba(6,8,16,0.9) 70%,
+          rgba(6,8,16,0.6) 100%
+        );
+      }
+      .content { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<!-- Section: About -->
+<div class="section active" id="sec-0">
+  <div class="content">
+    <h1 class="section-title">About Me</h1>
+    <h2 class="name">Kushal Khatri</h2>
+    <p class="body-text">
+      Full-stack developer and entrepreneur building innovative solutions with real impact.
+      Expert in web development, AI/ML integration, and creative problem-solving.
+    </p>
+    <p class="body-text">
+      Exploring AI for social good — continuous learner, boundary pusher, purposeful builder.
+    </p>
+    <div class="tags">
+      <span class="tag">JavaScript</span>
+      <span class="tag">React</span>
+      <span class="tag">Node.js</span>
+      <span class="tag">Python</span>
+      <span class="tag">Three.js</span>
+      <span class="tag">SQL</span>
+      <span class="tag">AI/ML</span>
+      <span class="tag">Web Design</span>
+    </div>
+  </div>
+</div>
+
+<!-- Section: Projects -->
+<div class="section" id="sec-1">
+  <div class="content">
+    <h1 class="section-title">Projects</h1>
+    <div class="carousel">
+      <button class="cbtn" id="prev-btn">‹</button>
+      <div class="project-card" id="project-card"></div>
+      <button class="cbtn" id="next-btn">›</button>
+    </div>
+    <div class="dots" id="proj-dots"></div>
+  </div>
+</div>
+
+<!-- Section: Contact -->
+<div class="section" id="sec-2">
+  <div class="content">
+    <h1 class="section-title">Get In Touch</h1>
+    <input  class="form-input" id="f-name"    type="text"  placeholder="Name">
+    <input  class="form-input" id="f-email"   type="email" placeholder="Email">
+    <input  class="form-input" id="f-subject" type="text"  placeholder="Subject">
+    <textarea class="form-input" id="f-msg" rows="4" placeholder="Message"></textarea>
+    <button class="submit-btn" id="send-btn">Send Message</button>
+    <div class="success-msg" id="success-msg">Message sent! I'll get back to you soon.</div>
+  </div>
+</div>
+
+<!-- Nav -->
+<div id="nav-dots"></div>
+<div id="section-label"></div>
+<div id="scroll-hint">
+  <span>scroll</span>
+  <div class="line"></div>
+</div>
+
+<!-- Three.js r128 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/index.min.js"></script>
+
+<script>
+// ─── Config ───────────────────────────────────────────────────────────────────
+const EMAILJS_PUBLIC_KEY = 'o9ETzT_4f0WhbDv6U';
+const EMAILJS_SERVICE_ID = 'service_7u1lzfv';
+const EMAILJS_TEMPLATE   = 'template_267pawk';
+const CONTACT_EMAIL      = 'khatriku0412@gmail.com';
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+const SECTIONS = ['About', 'Projects', 'Contact'];
+
+const PROJECTS = [
+  {
+    title: 'Lost But Found',
+    desc: 'Full-stack FBLA web app — Node.js, Express, SQLite, 3D interactive floor maps, AI item classification, GPS pin picker.',
+    tech: ['Node.js', 'Express', 'SQLite', 'Three.js', 'TensorFlow.js', 'EJS'],
+    link: 'https://github.com/yourusername/lost-but-found'
+  },
+  {
+    title: 'Battle Buddy AI',
+    desc: 'Voice-activated AI companion for veterans addressing mental health crises and VA benefits navigation.',
+    tech: ['Python', 'AI/ML', 'Voice Processing', 'NLP'],
+    link: '#'
+  },
+  {
+    title: 'Java Labs & DSA',
+    desc: 'Complete CTP 150 coursework: inheritance, exception handling, recursion, polymorphism, abstract classes.',
+    tech: ['Java', 'OOP', 'Data Structures', 'Algorithms'],
+    link: '#'
+  },
+  {
+    title: 'Calculus Problem Solver',
+    desc: "Interactive tool for Newton's method, Riemann sums, optimization, and numerical integration.",
+    tech: ['Mathematics', 'Algorithm Design', 'Visualization'],
+    link: '#'
+  }
+];
+
+// Per-section gem transform targets
+const TRANSFORMS = [
+  { rotY: 0,             rotX: 0.2,  posY: 0,    scale: 1,    camZ: 5   },
+  { rotY: Math.PI * 0.6, rotX: -0.3, posY: 0.4,  scale: 1.25, camZ: 4.2 },
+  { rotY: Math.PI * 1.4, rotX: 0.1,  posY: -0.3, scale: 0.9,  camZ: 5.5 }
+];
+
+// ─── Build gem geometry ───────────────────────────────────────────────────────
+function buildGem() {
+  const verts = [], indices = [];
+  const SIDES = 8;
+  const ang = i => (i / SIDES) * Math.PI * 2;
+  const half = Math.PI / SIDES;
+
+  // Upper girdle
+  const gi = 0;
+  for (let i = 0; i < SIDES; i++)
+    verts.push(Math.cos(ang(i)) * 1.0, 0.3, Math.sin(ang(i)) * 1.0);
+  // Lower girdle
+  for (let i = 0; i < SIDES; i++)
+    verts.push(Math.cos(ang(i) + half) * 0.92, -0.1, Math.sin(ang(i) + half) * 0.92);
+  // Crown ring
+  const ci = SIDES * 2;
+  for (let i = 0; i < SIDES; i++)
+    verts.push(Math.cos(ang(i) + half) * 0.52, 1.2, Math.sin(ang(i) + half) * 0.52);
+  // Top & bottom
+  const topI = SIDES * 3, botI = SIDES * 3 + 1;
+  verts.push(0, 2.1, 0, 0, -1.8, 0);
+
+  // Girdle band
+  for (let i = 0; i < SIDES; i++) {
+    const a = gi+i, b = gi+(i+1)%SIDES, c = SIDES+(i+1)%SIDES, d = SIDES+i;
+    indices.push(a,b,c, a,c,d);
+  }
+  // Crown ring → girdle
+  for (let i = 0; i < SIDES; i++) {
+    const a = ci+i, b = ci+(i+1)%SIDES, c = gi+(i+1)%SIDES, d = gi+i;
+    indices.push(a,b,c, a,c,d);
+  }
+  // Crown ring → top
+  for (let i = 0; i < SIDES; i++)
+    indices.push(topI, ci+i, ci+(i+1)%SIDES);
+  // Pavilion → bottom
+  for (let i = 0; i < SIDES; i++)
+    indices.push(botI, SIDES+(i+1)%SIDES, SIDES+i);
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+  return geo;
+}
+
+// ─── Three.js setup ───────────────────────────────────────────────────────────
+const canvas   = document.getElementById('canvas');
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x060810);
+scene.fog = new THREE.FogExp2(0x060810, 0.16);
+
+const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(0, 0, 5);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.4;
+
+// Lights
+scene.add(new THREE.AmbientLight(0x1a1a2e, 1.5));
+function mkLight(color, intensity, x, y, z) {
+  const l = new THREE.PointLight(color, intensity, 18);
+  l.position.set(x, y, z);
+  scene.add(l);
+  return l;
+}
+const L1 = mkLight(0xff9844, 4,   4,  3,  4);
+const L2 = mkLight(0x4488ff, 3,  -4,  2, -3);
+const L3 = mkLight(0xaa44ff, 2.2, 0, -4,  2);
+mkLight(0xffffff, 1.8, 0, 6, 0);
+
+// Procedural env map for reflections
+const pmrem = new THREE.PMREMGenerator(renderer);
+const envS = new THREE.Scene();
+envS.add(new THREE.Mesh(
+  new THREE.SphereGeometry(50, 16, 8),
+  new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    vertexShader: `varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+    fragmentShader: `
+      varying vec3 vP;
+      void main(){
+        vec3 d=normalize(vP);
+        vec3 c=mix(vec3(0.08,0.02,0.06),mix(vec3(0.02,0.04,0.12),vec3(0.12,0.05,0.01),abs(d.x)*0.5),d.y*0.5+0.5);
+        gl_FragColor=vec4(c,1.0);
+      }`
+  })
+));
+const envMap = pmrem.fromScene(envS).texture;
+scene.environment = envMap;
+pmrem.dispose();
+
+// Gem mesh
+const gemGeo = buildGem();
+const gemMat = new THREE.MeshPhysicalMaterial({
+  color: 0xaaddff,
+  metalness: 0,
+  roughness: 0.02,
+  transmission: 0.95,
+  thickness: 2.5,
+  ior: 2.42,
+  reflectivity: 1.0,
+  iridescence: 1.0,
+  iridescenceIOR: 1.8,
+  iridescenceThicknessRange: [100, 400],
+  envMapIntensity: 3,
+  transparent: true,
+  opacity: 0.92,
+  side: THREE.DoubleSide,
+  envMap
+});
+const gem = new THREE.Mesh(gemGeo, gemMat);
+scene.add(gem);
+gem.add(new THREE.LineSegments(
+  new THREE.EdgesGeometry(gemGeo, 12),
+  new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.15 })
+));
+
+// Particles
+const N = 200;
+const pPos = new Float32Array(N * 3);
+const pSpd = new Float32Array(N);
+const pPhs = new Float32Array(N);
+for (let i = 0; i < N; i++) {
+  const r = 2.5 + Math.random() * 3.5;
+  const theta = Math.random() * Math.PI * 2;
+  const phi   = Math.acos(2 * Math.random() - 1);
+  pPos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+  pPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+  pPos[i*3+2] = r * Math.cos(phi);
+  pSpd[i] = 0.002 + Math.random() * 0.004;
+  pPhs[i] = Math.random() * Math.PI * 2;
+}
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+scene.add(new THREE.Points(pGeo,
+  new THREE.PointsMaterial({ color: 0xff9844, size: 0.03, transparent: true, opacity: 0.5, sizeAttenuation: true })
+));
+
+// Proxy for GSAP to tween
+const proxy = { rotY: 0, rotX: 0.2, posY: 0, scale: 1, camZ: 5 };
+
+// ─── Render loop ──────────────────────────────────────────────────────────────
+const clock = new THREE.Clock();
+(function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  gem.rotation.y = proxy.rotY + Math.sin(t * 0.35) * 0.06;
+  gem.rotation.x = proxy.rotX + Math.cos(t * 0.28) * 0.04;
+  gem.position.y = proxy.posY + Math.sin(t * 0.5)  * 0.08;
+  gem.scale.setScalar(proxy.scale);
+  camera.position.z = proxy.camZ;
+
+  const a = t * 0.38;
+  L1.position.set(Math.cos(a)     * 5,  3, Math.sin(a)     * 5);
+  L2.position.set(Math.cos(a + 2) * 4,  2, Math.sin(a + 2) * 4);
+  L3.position.set(Math.cos(a + 4) * 3, -3, Math.sin(a + 4) * 3);
+
+  for (let i = 0; i < N; i++)
+    pPos[i*3+1] += Math.sin(t * pSpd[i] + pPhs[i]) * 0.0008;
+  pGeo.attributes.position.needsUpdate = true;
+
+  renderer.render(scene, camera);
+})();
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// ─── Section management ───────────────────────────────────────────────────────
+let currentSec = 0;
+let locked = false;
+
+function goTo(i) {
+  i = Math.max(0, Math.min(SECTIONS.length - 1, i));
+  if (i === currentSec) return;
+
+  document.getElementById('sec-' + currentSec).classList.remove('active');
+  currentSec = i;
+  document.getElementById('sec-' + currentSec).classList.add('active');
+
+  // Tween gem
+  gsap.to(proxy, { ...TRANSFORMS[i], duration: 1.2, ease: 'power3.inOut' });
+
+  updateNav();
+  document.getElementById('scroll-hint').style.opacity = i === 0 ? '1' : '0';
+}
+
+function updateNav() {
+  // Side dots
+  document.querySelectorAll('.nav-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === currentSec);
+    d.style.height = i === currentSec ? '22px' : '7px';
+  });
+  // Section label
+  document.getElementById('section-label').textContent = SECTIONS[currentSec];
+}
+
+// Build nav dots
+const navDots = document.getElementById('nav-dots');
+SECTIONS.forEach((_, i) => {
+  const b = document.createElement('button');
+  b.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  b.style.height = i === 0 ? '22px' : '7px';
+  b.addEventListener('click', () => goTo(i));
+  navDots.appendChild(b);
+});
+document.getElementById('section-label').textContent = SECTIONS[0];
+
+// ─── Scroll / touch / keyboard ────────────────────────────────────────────────
+window.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (locked) return;
+  locked = true;
+  goTo(currentSec + (e.deltaY > 0 ? 1 : -1));
+  setTimeout(() => { locked = false; }, 950);
+}, { passive: false });
+
+let touchStartY = null;
+window.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+window.addEventListener('touchend', e => {
+  if (touchStartY === null || locked) return;
+  const diff = touchStartY - e.changedTouches[0].clientY;
+  if (Math.abs(diff) < 40) return;
+  locked = true;
+  goTo(currentSec + (diff > 0 ? 1 : -1));
+  setTimeout(() => { locked = false; }, 950);
+  touchStartY = null;
+}, { passive: true });
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') goTo(currentSec + 1);
+  if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  goTo(currentSec - 1);
+});
+
+// ─── Projects carousel ────────────────────────────────────────────────────────
+let projIdx = 0;
+
+function renderProject() {
+  const p = PROJECTS[projIdx];
+  document.getElementById('project-card').innerHTML = `
+    <h2>${p.title}</h2>
+    <p class="project-desc">${p.desc}</p>
+    <div class="tech-list">${p.tech.map(t => `<span class="tech-badge">${t}</span>`).join('')}</div>
+    <a class="project-link" href="${p.link}" target="_blank" rel="noopener">View Project →</a>
+  `;
+  const dots = document.getElementById('proj-dots');
+  dots.innerHTML = '';
+  PROJECTS.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.className = 'dot' + (i === projIdx ? ' active' : '');
+    b.style.width = i === projIdx ? '22px' : '7px';
+    b.addEventListener('click', () => { projIdx = i; renderProject(); });
+    dots.appendChild(b);
+  });
+}
+document.getElementById('prev-btn').addEventListener('click', () => {
+  projIdx = (projIdx - 1 + PROJECTS.length) % PROJECTS.length;
+  renderProject();
+});
+document.getElementById('next-btn').addEventListener('click', () => {
+  projIdx = (projIdx + 1) % PROJECTS.length;
+  renderProject();
+});
+renderProject();
+
+// ─── Contact form ─────────────────────────────────────────────────────────────
+document.getElementById('send-btn').addEventListener('click', async () => {
+  const name    = document.getElementById('f-name').value.trim();
+  const email   = document.getElementById('f-email').value.trim();
+  const subject = document.getElementById('f-subject').value.trim();
+  const message = document.getElementById('f-msg').value.trim();
+  if (!name || !email || !message) { alert('Please fill in all fields.'); return; }
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE, {
+      to_email: CONTACT_EMAIL,
+      from_name: name,
+      from_email: email,
+      subject,
+      message
+    });
+    document.getElementById('success-msg').classList.add('show');
+    ['f-name','f-email','f-subject','f-msg'].forEach(id => document.getElementById(id).value = '');
+    setTimeout(() => document.getElementById('success-msg').classList.remove('show'), 3000);
+  } catch (err) {
+    console.error(err);
+    alert('Failed to send. Check console.');
+  }
+});
+</script>
+</body>
+</html>
