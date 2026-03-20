@@ -320,7 +320,7 @@ const EMAILJS_SERVICE_ID = 'service_7u1lzfv';
 const EMAILJS_TEMPLATE   = 'template_267pawk';
 const CONTACT_EMAIL      = 'khatriku0412@gmail.com';
 
-emailjs.init(EMAILJS_PUBLIC_KEY);
+window.addEventListener('load', () => emailjs.init(EMAILJS_PUBLIC_KEY));
 
 const SECTIONS = ['About', 'Projects', 'Contact'];
 
