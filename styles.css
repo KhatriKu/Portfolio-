@@ -16,9 +16,10 @@ html, body {
 .portfolio-container {
     position: relative;
     width: 100%;
-    background: #0a0a0a;
+    background: transparent;
 }
 
+/* Canvas stays fixed — always visible behind everything */
 #hero-canvas {
     position: fixed;
     top: 0;
@@ -29,20 +30,29 @@ html, body {
     display: block;
 }
 
+/* Sections scroll over the fixed canvas */
 .portfolio-section {
     position: relative;
     z-index: 2;
     min-height: 100vh;
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    backdrop-filter: blur(10px);
-    background: rgba(10, 10, 10, 0.85);
+    /* Left-align content so model is visible on the right */
+    justify-content: flex-start;
+    padding: 60px 5vw;
+    /* Gradient covers only the left ~55% — right side is fully transparent */
+    background: linear-gradient(
+        to right,
+        rgba(10, 10, 10, 0.92) 0%,
+        rgba(10, 10, 10, 0.85) 40%,
+        rgba(10, 10, 10, 0.4) 60%,
+        rgba(10, 10, 10, 0.0) 75%
+    );
+    /* No backdrop-filter — that was eating the canvas */
 }
 
 .content-wrapper {
-    max-width: 800px;
+    max-width: 520px;
     width: 100%;
 }
 
@@ -54,7 +64,7 @@ html, body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-align: center;
+    text-align: left;
 }
 
 /* About Section */
@@ -74,18 +84,17 @@ html, body {
     line-height: 1.8;
     color: #b0b0b0;
     margin-bottom: 20px;
-    text-align: justify;
 }
 
 .skills-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
     margin-top: 30px;
 }
 
 .skill-tag {
-    background: rgba(217, 119, 6, 0.1);
+    background: rgba(217, 119, 6, 0.12);
     border: 1px solid #ff9844;
     color: #ff9844;
     padding: 8px 16px;
@@ -97,7 +106,7 @@ html, body {
 }
 
 .skill-tag:hover {
-    background: rgba(217, 119, 6, 0.2);
+    background: rgba(217, 119, 6, 0.25);
     transform: translateY(-2px);
 }
 
@@ -105,24 +114,25 @@ html, body {
 .projects-carousel {
     display: grid;
     grid-template-columns: auto 1fr auto;
-    gap: 30px;
+    gap: 20px;
     align-items: center;
-    margin: 40px 0;
+    margin: 30px 0;
 }
 
 .carousel-btn {
     background: rgba(217, 119, 6, 0.2);
     border: 1px solid #ff9844;
     color: #ff9844;
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    font-size: 1.5em;
+    font-size: 1.3em;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .carousel-btn:hover {
@@ -132,13 +142,13 @@ html, body {
 }
 
 .project-card {
-    background: rgba(30, 30, 40, 0.9);
+    background: rgba(20, 20, 28, 0.75);
     border: 1px solid rgba(217, 119, 6, 0.3);
     border-radius: 10px;
-    padding: 30px;
-    backdrop-filter: blur(10px);
+    padding: 24px;
+    backdrop-filter: blur(6px);
     transition: all 0.4s ease;
-    min-height: 300px;
+    min-height: 260px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -146,35 +156,36 @@ html, body {
 
 .project-card:hover {
     border-color: #ff9844;
-    box-shadow: 0 0 30px rgba(217, 119, 6, 0.2);
+    box-shadow: 0 0 30px rgba(217, 119, 6, 0.15);
 }
 
 .project-card h2 {
-    font-size: 1.8em;
+    font-size: 1.6em;
     color: #ff9844;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
 .project-description {
     color: #a0a0a0;
     line-height: 1.6;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     flex-grow: 1;
+    font-size: 0.95em;
 }
 
 .tech-stack {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
+    gap: 6px;
+    margin-bottom: 16px;
 }
 
 .tech-badge {
     background: rgba(217, 119, 6, 0.1);
     color: #ff9844;
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 0.85em;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
     border: 1px solid rgba(217, 119, 6, 0.3);
 }
 
@@ -184,6 +195,7 @@ html, body {
     font-weight: 600;
     transition: all 0.3s ease;
     display: inline-block;
+    font-size: 0.95em;
 }
 
 .project-link:hover {
@@ -194,7 +206,7 @@ html, body {
     display: flex;
     justify-content: center;
     gap: 8px;
-    margin-top: 30px;
+    margin-top: 20px;
 }
 
 .indicator {
@@ -208,60 +220,60 @@ html, body {
 
 .indicator.active {
     background: #ff9844;
-    width: 30px;
+    width: 28px;
     border-radius: 5px;
 }
 
 /* Contact Section */
 .contact-form {
-    max-width: 600px;
-    margin: 0 auto;
+    width: 100%;
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .form-input {
     width: 100%;
-    padding: 15px;
-    background: rgba(30, 30, 40, 0.6);
+    padding: 13px 15px;
+    background: rgba(20, 20, 28, 0.7);
     border: 1px solid rgba(217, 119, 6, 0.3);
     border-radius: 8px;
     color: #e0e0e0;
     font-family: inherit;
     font-size: 1em;
     transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
 }
 
 .form-input:focus {
     outline: none;
     border-color: #ff9844;
-    background: rgba(30, 30, 40, 0.9);
-    box-shadow: 0 0 20px rgba(217, 119, 6, 0.2);
+    background: rgba(20, 20, 28, 0.9);
+    box-shadow: 0 0 20px rgba(217, 119, 6, 0.15);
 }
 
 .form-input::placeholder {
-    color: #707070;
+    color: #606060;
 }
 
 .submit-btn {
     width: 100%;
-    padding: 15px;
+    padding: 14px;
     background: linear-gradient(135deg, #ff9844 0%, #8b4513 100%);
     border: none;
     border-radius: 8px;
     color: white;
-    font-size: 1.1em;
+    font-size: 1.05em;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .submit-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(217, 119, 6, 0.4);
+    box-shadow: 0 10px 30px rgba(217, 119, 6, 0.35);
 }
 
 .submit-btn:active {
@@ -271,10 +283,10 @@ html, body {
 .success-message {
     text-align: center;
     color: #4ade80;
-    padding: 15px;
-    background: rgba(74, 222, 128, 0.1);
+    padding: 14px;
+    background: rgba(74, 222, 128, 0.08);
     border-radius: 8px;
-    margin-top: 15px;
+    margin-top: 12px;
     border: 1px solid #4ade80;
     display: none;
 }
@@ -284,9 +296,17 @@ html, body {
 }
 
 @media (max-width: 768px) {
+    .portfolio-section {
+        justify-content: center;
+        /* On mobile, full-width semi-transparent overlay */
+        background: rgba(10, 10, 10, 0.88);
+        padding: 40px 15px;
+    }
+
     .section-title {
         font-size: 2em;
-        margin-bottom: 30px;
+        text-align: center;
+        margin-bottom: 24px;
     }
 
     .name-title {
@@ -298,18 +318,11 @@ html, body {
     }
 
     .projects-carousel {
-        grid-template-columns: 1fr;
+        grid-template-columns: auto 1fr auto;
+        gap: 10px;
     }
 
-    .carousel-btn {
-        display: none;
-    }
-
-    .carousel-indicators {
-        margin-top: 20px;
-    }
-
-    .portfolio-section {
-        padding: 40px 15px;
+    .content-wrapper {
+        max-width: 100%;
     }
 }
