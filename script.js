@@ -1,5 +1,5 @@
 // Initialize EmailJS - REPLACE WITH YOUR PUBLIC KEY
-emailjs.init('YOUR_EMAILJS_PUBLIC_KEY');
+emailjs.init('o9ETzT_4f0WhbDv6U');
 
 // Projects data
 const projects = [
@@ -245,10 +245,10 @@ async function handleContactSubmit(e) {
 
     try {
         await emailjs.send(
-            'YOUR_SERVICE_ID', // REPLACE WITH YOUR SERVICE ID
+            'service_7u1lzfv', // REPLACE WITH YOUR SERVICE ID
             'portfolio_contact', // Template name
             {
-                to_email: 'noreply@kushal.dev', // CHANGE THIS TO YOUR EMAIL
+                to_email: 'noreplylostbutfound@gmail.com', // CHANGE THIS TO YOUR EMAIL
                 from_email: formData.get('email'),
                 from_name: formData.get('name'),
                 message: formData.get('message'),
