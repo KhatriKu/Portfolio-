@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kushal Khatri - Full Stack Developer & Entrepreneur</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="portfolio-container">
+        <canvas id="hero-canvas"></canvas>
+
+        <!-- Section 1: About Me -->
+        <section class="portfolio-section about-section">
+            <div class="content-wrapper">
+                <h1 class="section-title">About Me</h1>
+                <div class="about-content">
+                    <h2 class="name-title">Kushal Khatri</h2>
+                    <p class="about-text">
+                        I'm a passionate full-stack developer and entrepreneur focused on building innovative solutions
+                        that make a real impact. With expertise in web development, AI/ML integration, and creative problem-solving,
+                        I transform ideas into elegant, scalable applications.
+                    </p>
+                    <p class="about-text">
+                        Currently exploring entrepreneurship and AI applications for social impact. I believe in continuous learning,
+                        pushing boundaries, and creating technology that serves a purpose beyond profit.
+                    </p>
+                    <div class="skills-grid">
+                        <span class="skill-tag">JavaScript</span>
+                        <span class="skill-tag">React</span>
+                        <span class="skill-tag">Node.js</span>
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">Three.js</span>
+                        <span class="skill-tag">SQL</span>
+                        <span class="skill-tag">AI/ML</span>
+                        <span class="skill-tag">Web Design</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Projects -->
+        <section class="portfolio-section projects-section">
+            <div class="content-wrapper">
+                <h1 class="section-title">Projects</h1>
+                <div class="projects-carousel">
+                    <button class="carousel-btn prev-btn" onclick="handleProjectNavigate(-1)">←</button>
+
+                    <div class="project-card" id="project-card">
+                        <!-- Populated by JavaScript -->
+                    </div>
+
+                    <button class="carousel-btn next-btn" onclick="handleProjectNavigate(1)">→</button>
+                </div>
+
+                <div class="carousel-indicators" id="carousel-indicators">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Contact -->
+        <section class="portfolio-section contact-section">
+            <div class="content-wrapper">
+                <h1 class="section-title">Get In Touch</h1>
+                <form class="contact-form" id="contact-form" onsubmit="handleContactSubmit(event)">
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Your Name" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Your Email" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="subject" placeholder="Subject" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <textarea name="message" placeholder="Your Message" rows="6" required class="form-input"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message</button>
+                    <div class="success-message" id="success-message">
+                        ✅ Message sent! I'll get back to you soon.
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/index.min.js"></script>
+
+    <!-- Your Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
