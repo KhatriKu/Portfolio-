@@ -242,6 +242,7 @@
       .content { max-width: 100%; }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/index.min.js"></script>
 </head>
 <body>
 
@@ -310,8 +311,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <!-- GSAP -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<!-- EmailJS -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/index.min.js"></script>
+
 
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -320,7 +320,7 @@ const EMAILJS_SERVICE_ID = 'service_7u1lzfv';
 const EMAILJS_TEMPLATE   = 'template_267pawk';
 const CONTACT_EMAIL      = 'khatriku0412@gmail.com';
 
-window.addEventListener('load', () => emailjs.init(EMAILJS_PUBLIC_KEY));
+emailjs.init(EMAILJS_PUBLIC_KEY);
 
 const SECTIONS = ['About', 'Projects', 'Contact'];
 
