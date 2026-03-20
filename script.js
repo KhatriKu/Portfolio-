@@ -1,5 +1,5 @@
-// Initialize EmailJS - REPLACE WITH YOUR PUBLIC KEY
-emailjs.init('o9ETzT_4f0WhbDv6U');
+// Initialize EmailJS
+emailjs.init('YOUR_EMAILJS_PUBLIC_KEY');
 
 // Projects data
 const projects = [
@@ -30,13 +30,11 @@ const projects = [
 ];
 
 let projectIndex = 0;
-let scrollProgress = 0;
 let scene, camera, renderer, model;
 let particles = [];
-let mouseX = 0;
-let mouseY = 0;
+let mouseX = 0, mouseY = 0;
 
-// Particle class
+// ─── Particle class ────────────────────────────────────────────────────────────
 class Particle {
     constructor(x, y, z) {
         this.position = new THREE.Vector3(x, y, z);
@@ -50,49 +48,44 @@ class Particle {
         this.geometry = new THREE.BufferGeometry();
         this.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3));
         this.material = new THREE.PointsMaterial({
-            color: 0x7a7a7a,
+            color: 0xff9844,
             size: 0.05,
             sizeAttenuation: true,
-            opacity: this.life
+            transparent: true,
+            opacity: 1.0
         });
         this.mesh = new THREE.Points(this.geometry, this.material);
         this.mesh.position.copy(this.position);
     }
 
     update(mouseWorldPos) {
-        // Apply gravity
         this.velocity.y -= 0.005;
-
-        // Check distance to mouse
         const distance = this.position.distanceTo(mouseWorldPos);
-        if (distance < 0.5) { // 10 pixels ≈ 0.5 units in world space
-            // Bounce away from cursor
-            const direction = new THREE.Vector3().subVectors(this.position, mouseWorldPos).normalize();
-            this.velocity.add(direction.multiplyScalar(0.15));
+        if (distance < 0.5) {
+            const dir = new THREE.Vector3().subVectors(this.position, mouseWorldPos).normalize();
+            this.velocity.add(dir.multiplyScalar(0.15));
         }
-
         this.position.add(this.velocity);
         this.life -= this.decay;
         this.material.opacity = this.life;
-
         this.mesh.position.copy(this.position);
-
         return this.life > 0;
     }
 }
 
-// Three.js Setup
+// ─── Three.js Setup ────────────────────────────────────────────────────────────
 function initThreeJS() {
-    // Scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0a0a0a);
 
-    // Camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 0, 4);
 
-    // Renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: document.getElementById('hero-canvas') });
+    renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        canvas: document.getElementById('hero-canvas')
+    });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.shadowMap.enabled = true;
@@ -101,67 +94,154 @@ function initThreeJS() {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 10, 7);
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 2048;
-    directionalLight.shadow.mapSize.height = 2048;
-    scene.add(directionalLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight.position.set(5, 10, 7);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    scene.add(dirLight);
 
     const pointLight = new THREE.PointLight(0xd97706, 0.5);
     pointLight.position.set(-5, 5, 5);
     scene.add(pointLight);
 
-    // Load model
     loadModel();
-
-    // Animation loop
+    initScrollAnimations();
     animate();
 
-    // Event listeners
-    window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleResize);
     window.addEventListener('mousemove', handleMouseMove);
 }
 
+// ─── OBJ + MTL Loader ─────────────────────────────────────────────────────────
 function loadModel() {
-    // Load OBJ model
-    const objLoader = new THREE.OBJLoader();
+    // MTLLoader and OBJLoader are available globally after the CDN scripts load
     const mtlLoader = new THREE.MTLLoader();
-    
-    mtlLoader.load('tinker.mtl', (mtl) => {
+    mtlLoader.load('obj.mtl', (mtl) => {
         mtl.preload();
+
+        const objLoader = new THREE.OBJLoader();
         objLoader.setMaterials(mtl);
         objLoader.load('tinker.obj', (obj) => {
-            obj.scale.set(3, 3, 3);
+            // Centre and normalise the model to fit the scene
+            const box = new THREE.Box3().setFromObject(obj);
+            const centre = new THREE.Vector3();
+            box.getCenter(centre);
+            obj.position.sub(centre); // centre at origin
+
+            const size = new THREE.Vector3();
+            box.getSize(size);
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const targetSize = 3;
+            const scale = targetSize / maxDim;
+            obj.scale.setScalar(scale);
+
             obj.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
                 }
             });
+
             scene.add(obj);
             model = obj;
+        },
+        // progress
+        undefined,
+        (err) => console.error('OBJ load error', err));
+    },
+    undefined,
+    (err) => console.error('MTL load error', err));
+}
+
+// ─── GSAP ScrollTrigger – scrolljack animation ─────────────────────────────────
+// We drive the model's rotation and position entirely through GSAP tweened
+// proxy values so the animation is frame-perfect and tied to actual scroll position.
+const modelProxy = { rotY: 0, posY: 0, scale: 3 };
+
+function initScrollAnimations() {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const sections = ['#section-about', '#section-projects', '#section-contact'];
+    const totalSections = sections.length;
+
+    // ── Section fade-in on enter ──────────────────────────────────────────────
+    sections.forEach((sel) => {
+        gsap.from(sel + ' .content-wrapper', {
+            scrollTrigger: {
+                trigger: sel,
+                start: 'top 80%',
+                toggleActions: 'play none none reverse'
+            },
+            opacity: 0,
+            y: 60,
+            duration: 0.8,
+            ease: 'power2.out'
         });
+    });
+
+    // ── Model rotation: full spin across the whole page ───────────────────────
+    gsap.to(modelProxy, {
+        rotY: Math.PI * 4,          // two full rotations over all sections
+        ease: 'none',
+        scrollTrigger: {
+            trigger: '#scroll-container',
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 1.2                // slight lag = cinematic feel
+        }
+    });
+
+    // ── Model scale: grow during projects section, normal elsewhere ───────────
+    // grow on enter projects
+    gsap.to(modelProxy, {
+        scale: 4.5,
+        ease: 'power1.inOut',
+        scrollTrigger: {
+            trigger: '#section-projects',
+            start: 'top 70%',
+            end: 'top 20%',
+            scrub: true
+        }
+    });
+    // shrink on leave projects
+    gsap.to(modelProxy, {
+        scale: 3,
+        ease: 'power1.inOut',
+        scrollTrigger: {
+            trigger: '#section-projects',
+            start: 'bottom 80%',
+            end: 'bottom 30%',
+            scrub: true
+        }
+    });
+
+    // ── Model vertical drift ─────────────────────────────────────────────────
+    gsap.to(modelProxy, {
+        posY: -1.5,
+        ease: 'none',
+        scrollTrigger: {
+            trigger: '#scroll-container',
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 1.5
+        }
     });
 }
 
-function handleMouseMove(event) {
-    mouseX = event.clientX;
-    mouseY = event.clientY;
-}
-
+// ─── Animation Loop ────────────────────────────────────────────────────────────
 function animate() {
     requestAnimationFrame(animate);
 
-    // Emit particles around model
+    // Emit particles
     if (model && Math.random() < 0.3) {
         const angle = Math.random() * Math.PI * 2;
         const radius = 2;
-        const x = Math.cos(angle) * radius;
-        const y = Math.random() * 2 - 1;
-        const z = Math.sin(angle) * radius;
-        const particle = new Particle(x, y, z);
+        const particle = new Particle(
+            Math.cos(angle) * radius,
+            Math.random() * 2 - 1,
+            Math.sin(angle) * radius
+        );
         scene.add(particle.mesh);
         particles.push(particle);
     }
@@ -175,46 +255,34 @@ function animate() {
 
     particles = particles.filter(p => {
         const alive = p.update(mouseWorldPos);
-        if (!alive) {
-            scene.remove(p.mesh);
-        }
+        if (!alive) scene.remove(p.mesh);
         return alive;
     });
 
+    // Apply GSAP-driven proxy values directly — no lerp needed, scrub handles smoothing
     if (model) {
-        // Rotate based on scroll
-        const targetRotationY = scrollProgress * Math.PI * 4;
-        model.rotation.y += (targetRotationY - model.rotation.y) * 0.05;
-
-        // Scale based on section
-        const sectionProgress = scrollProgress * 3;
-        let targetScale = 3;
-        if (sectionProgress > 0.5 && sectionProgress < 2.5) {
-            targetScale = 3 + (Math.sin((sectionProgress - 0.5) * Math.PI / 2) * 1.5);
-        }
-        model.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.05);
-
-        // Position shift
-        const targetPositionY = (sectionProgress - 1) * 0.5;
-        model.position.y += (targetPositionY - model.position.y) * 0.05;
+        model.rotation.y = modelProxy.rotY;
+        model.position.y = modelProxy.posY;
+        model.scale.setScalar(modelProxy.scale);
     }
 
     renderer.render(scene, camera);
 }
 
-function handleScroll() {
-    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-    scrollProgress = window.scrollY / scrollHeight;
+// ─── Handlers ─────────────────────────────────────────────────────────────────
+function handleMouseMove(e) {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
 }
 
 function handleResize() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    camera.aspect = width / height;
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    ScrollTrigger.refresh();
 }
 
+// ─── Projects Carousel ────────────────────────────────────────────────────────
 function handleProjectNavigate(direction) {
     projectIndex = (projectIndex + direction + projects.length) % projects.length;
     updateProjectCard();
@@ -222,52 +290,47 @@ function handleProjectNavigate(direction) {
 
 function updateProjectCard() {
     const project = projects[projectIndex];
-    const card = document.getElementById('project-card');
-    card.innerHTML = `
+    document.getElementById('project-card').innerHTML = `
         <h2>${project.title}</h2>
         <p class="project-description">${project.description}</p>
         <div class="tech-stack">
-            ${project.tech.map(tech => `<span class="tech-badge">${tech}</span>`).join('')}
+            ${project.tech.map(t => `<span class="tech-badge">${t}</span>`).join('')}
         </div>
         <a href="${project.link}" class="project-link">View Project →</a>
     `;
 
-    // Update indicators
-    const indicators = document.getElementById('carousel-indicators');
-    indicators.innerHTML = projects.map((_, i) => `
-        <div class="indicator ${i === projectIndex ? 'active' : ''}" onclick="handleProjectNavigate(${i - projectIndex})"></div>
+    document.getElementById('carousel-indicators').innerHTML = projects.map((_, i) => `
+        <div class="indicator ${i === projectIndex ? 'active' : ''}"
+             onclick="handleProjectNavigate(${i - projectIndex})"></div>
     `).join('');
 }
 
+// ─── Contact Form ─────────────────────────────────────────────────────────────
 async function handleContactSubmit(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
-
     try {
         await emailjs.send(
-            'service_7u1lzfv', // REPLACE WITH YOUR SERVICE ID
-            'portfolio_contact', // Template name
+            'YOUR_SERVICE_ID',
+            'portfolio_contact',
             {
-                to_email: 'noreplylostbutfound@gmail.com', // CHANGE THIS TO YOUR EMAIL
+                to_email: 'noreply@kushal.dev',
                 from_email: formData.get('email'),
                 from_name: formData.get('name'),
                 message: formData.get('message'),
                 subject: formData.get('subject')
             }
         );
-
         document.getElementById('success-message').classList.add('show');
         e.target.reset();
-        setTimeout(() => {
-            document.getElementById('success-message').classList.remove('show');
-        }, 3000);
-    } catch (error) {
-        console.error('Email send failed:', error);
-        alert('Failed to send message. Please check console and verify EmailJS setup.');
+        setTimeout(() => document.getElementById('success-message').classList.remove('show'), 3000);
+    } catch (err) {
+        console.error('EmailJS error:', err);
+        alert('Failed to send message. Check console for details.');
     }
 }
 
-// Initialize on load
+// ─── Init ──────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
     initThreeJS();
     updateProjectCard();
