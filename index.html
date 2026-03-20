@@ -294,7 +294,7 @@
     <input  class="form-input" id="f-subject" type="text"  placeholder="Subject">
     <textarea class="form-input" id="f-msg" rows="4" placeholder="Message"></textarea>
     <button class="submit-btn" id="send-btn">Send Message</button>
-    <div class="success-msg" id="success-msg">Message sent! I'll get back to you soon.</div>
+    <div class="success-msg" id="success-msg">✅ Message sent! I'll get back to you soon.</div>
   </div>
 </div>
 
@@ -321,6 +321,7 @@ const EMAILJS_TEMPLATE   = 'template_267pawk';
 const CONTACT_EMAIL      = 'khatriku0412@gmail.com';
 
 window.addEventListener('load', () => emailjs.init(EMAILJS_PUBLIC_KEY));
+
 const SECTIONS = ['About', 'Projects', 'Contact'];
 
 const PROJECTS = [
